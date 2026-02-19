@@ -139,7 +139,17 @@ func list_expenses(category string, date string) (string, error) {
 	category = get_valid_category(category)
 	var listed_expenses []Expense
 	if category != "" && date != ""{
-		return "", fmt.Errorf("you haven't implemented that feature")
+		date, err := time.Parse("02-01-2006", date)
+  
+		if err != nil {
+			return "", fmt.Errorf("Unable to parse date.")
+		}
+
+		for expense := range(expenses) {
+			if expenses[expense].Time.Day() == date.Day() && expenses[expense].Category == category {
+				listed_expenses = append(listed_expenses, expenses[expense])
+			}
+		}
 	} else if category != "" {
 		for expense := range(expenses) {
 			if expenses[expense].Category == category {
@@ -147,7 +157,17 @@ func list_expenses(category string, date string) (string, error) {
 			}
 		}
 	} else if date != "" {
-		return "", fmt.Errorf("you haven't implemented that feature")
+		date, err := time.Parse("02-01-2006", date)
+  
+		if err != nil {
+			return "", fmt.Errorf("Unable to parse date.")
+		}
+
+		for expense := range(expenses) {
+			if expenses[expense].Time.Day() == date.Day() {
+				listed_expenses = append(listed_expenses, expenses[expense])
+			}
+		}
 	} else {
 		listed_expenses = expenses
 	}

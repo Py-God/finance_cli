@@ -19,8 +19,11 @@ var (
 var listExpensesCmd = &cobra.Command{
 	Use:   "listExpenses",
 	Short: "List added expenses",
-	Long: `flag --category or -c <category> to filter using category
+	Long: `Use like:
+./bin/finance list -c <category> -d <DD-MM-YYYY>
+flag --category or -c <category> to filter using category
 flag --date or  -d to filter using date
+NOTE: date must be in DD-MM-YYYY format
 no flags to list all available expenses`,
 	Aliases: []string{"list"},
 	Args: cobra.RangeArgs(0, 2),
@@ -34,8 +37,10 @@ no flags to list all available expenses`,
 		} else if category_given && date_given && len(args) > 0 {
 			expenses, err = list_expenses(args[0], args[1])
 		} else {
-			if len(args) == 0 {
+			if len(args) == 0 && (category_given || date_given){
 				fmt.Println("No arguments were given.")
+			} else {
+				expenses, err = list_expenses("", "")
 			}
 		}
 
