@@ -17,12 +17,11 @@ var addExpenseCmd = &cobra.Command{
 	Short:   "Add an expense",
 	Args:    cobra.ExactArgs(3),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		result, err := add_expense(args[0], args[1], args[2])
+		_, err := add_expense(args[0], args[1], args[2])
 		if err != nil {
 			return err // Cobra prints "Error: <your message>"
 		}
-		fmt.Println("Expense added successfully:")
-		fmt.Println(result)
+		fmt.Println("Expense added successfully!")
 		return nil
 	},
 
