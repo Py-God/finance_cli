@@ -12,5 +12,19 @@
         "amount": 18000,
         "description": "Data for February",
         "time": "2026-02-19T17:14:43.460629857+01:00"
+    },
+    {
+        "id": "846c2520-2011-4c4c-88b8-4d8fcc43ac65",
+        "category": "Groceries",
+        "amount": 30000,
+        "description": "shopping for skincare",
+        "time": "2026-02-19T19:39:38.033543847+01:00"
+    },
+    {
+        "id": "ce037513-6170-4705-b86e-94100bd8ac57",
+        "category": "Feeding",
+        "amount": 3200,
+        "description": "Bought item7Go for lunch",
+        "time": "2026-02-20T13:51:27.683083247+01:00"
     }
 ]

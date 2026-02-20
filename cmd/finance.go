@@ -49,6 +49,24 @@ func get_valid_category(category string) string {
 	return category_interpreted
 }
 
+func read_json(filename string) ([]Expense, error) {
+	data_bytes, err := os.ReadFile(filename)
+	if err != nil {
+		return []Expense{}, err
+	}
+
+	// create a list of expenses struct
+	var expenses []Expense
+	if len(data_bytes) > 0{
+		err = json.Unmarshal(data_bytes, &expenses)
+		if err != nil {
+			return []Expense{}, err
+		}
+	}
+
+	return expenses, nil
+}
+
 func add_expense(category string, amount string, description string) (string, error) {
 	amount_conv, err := strconv.ParseFloat(amount, 64)
 	if err != nil {
@@ -120,67 +138,76 @@ func add_expense(category string, amount string, description string) (string, er
 }
 
 
-func list_expenses(category string, date string) (string, error) {
+func list_expenses() (string, error) {
 	filename := "expenses.json"
-	data_bytes, err := os.ReadFile(filename)
+	expenses, err := read_json(filename)
 	if err != nil {
-		return "", fmt.Errorf("failed to read JSON file: %w", err)
-	}
-
-	// create a list of expenses struct
-	var expenses []Expense
-	if len(data_bytes) > 0{
-		err = json.Unmarshal(data_bytes, &expenses)
-		if err != nil {
-			return "", fmt.Errorf("failed to read JSON file: %w", err)
-		}
-	}
-
-	category = get_valid_category(category)
-	var listed_expenses []Expense
-	if category != "" && date != ""{
-		date, err := time.Parse("02-01-2006", date)
-  
-		if err != nil {
-			return "", fmt.Errorf("Unable to parse date.")
-		}
-
-		for expense := range(expenses) {
-			if expenses[expense].Time.Day() == date.Day() && expenses[expense].Category == category {
-				listed_expenses = append(listed_expenses, expenses[expense])
-			}
-		}
-	} else if category != "" {
-		for expense := range(expenses) {
-			if expenses[expense].Category == category {
-				listed_expenses = append(listed_expenses, expenses[expense])
-			}
-		}
-	} else if date != "" {
-		date, err := time.Parse("02-01-2006", date)
-  
-		if err != nil {
-			return "", fmt.Errorf("Unable to parse date.")
-		}
-
-		for expense := range(expenses) {
-			if expenses[expense].Time.Day() == date.Day() {
-				listed_expenses = append(listed_expenses, expenses[expense])
-			}
-		}
-	} else {
-		listed_expenses = expenses
+		return "", fmt.Errorf("%w", err)
 	}
 	
 	var listed_expenses_string []byte
-	if len(listed_expenses) == 0 {
+	if len(expenses) == 0 {
 		return "No results found", nil
 	} else {
-		listed_expenses_string, err = json.MarshalIndent(listed_expenses, "", "    ")
+		listed_expenses_string, err = json.MarshalIndent(expenses, "", "    ")
 		if err != nil {
 			return "", fmt.Errorf("Error occurred during marshalling expenses to display as json: %w", err)
 		}
 	}
 
 	return string(listed_expenses_string), nil
+}
+
+
+func update_expense(id string, updates map[string]string) error {
+	filename := "expenses.json"
+	expenses, err := read_json(filename)
+	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
+
+	id_found := false
+	for expense := range(expenses) {
+		if expenses[expense].ID.String() == id {
+			id_found = true
+		}
+	}
+
+	if id_found == false {
+		return fmt.Errorf("Invalid ID")
+	}
+
+	for expense := range(expenses) {
+		if expenses[expense].ID.String() == id {
+			if updates["category"] != "" {
+				expenses[expense].Category = get_valid_category(updates["category"])
+			}
+			if updates["amount"] != "" {
+				amount_int, err := strconv.Atoi(updates["amount"])
+				if err != nil {
+					return err
+				}
+				expenses[expense].Amount = float64(amount_int)
+			}
+			if updates["description"] != "" {
+				expenses[expense].Description = updates["description"]
+			}
+		}
+	}
+
+	json_expenses, err := json.MarshalIndent(expenses, "", "    ")
+    if err != nil {
+		return fmt.Errorf("Error occurred during marshalling: %w", err)
+    }
+	fmt.Println("JSON object created successfully")
+
+	// write to the file
+	err = os.WriteFile(filename, json_expenses, 0644)
+	if err != nil {
+		return fmt.Errorf("failed to save file: %w", err)
+	}
+
+	log.Println("Expense successfully updated")
+
+	return nil
 }
