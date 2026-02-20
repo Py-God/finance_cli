@@ -11,18 +11,24 @@ import (
 )
 
 // categoriesCmd represents the categories command
-var categoriesCmd = &cobra.Command{
+var ListcategoriesCmd = &cobra.Command{
 	Use:   "categories",
 	Short: "Display available categories",
 	Long: `Use by running:
 	./bin/finance categories`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(displayCategories())
+	RunE: func(cmd *cobra.Command, args []string) error {
+		categories, err := ListCategories()
+		if err != nil {
+			return err
+		}
+		fmt.Println(categories)
+
+		return nil
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(categoriesCmd)
+	rootCmd.AddCommand(ListcategoriesCmd)
 
 	// Here you will define your flags and configuration settings.
 

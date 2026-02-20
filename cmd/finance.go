@@ -25,31 +25,69 @@ type Expense struct {
 	Time        time.Time `json:"time"`
 }
 
-
-func displayCategories() string {
-	message := `Available Fields (not case sensitive)
-	Transportation - t
-	Feeding - f
-	Groceries - g
-	Miscellaneous - m`
-
-	return message
+type Category struct {
+	Short 	string `json:"short"`
+	Name 	string `json:"name"`
 }
 
-func getValidCategory(category string) string {
-	var category_interpreted string
-	switch category {
-	case "t": category_interpreted = "Transportation"
-	case "f": category_interpreted = "Feeding"
-	case "g": category_interpreted = "Groceries"
-	case "m": category_interpreted = "Miscellaneous"
-	default:  category_interpreted = category
+func ListCategories() (string, error) {
+	filename := "categories.json"
+	categories, err := readCategoryJson(filename)
+	if err != nil {
+		return "", fmt.Errorf("%w", err)
+	}
+	
+	var listed_categories_string []byte
+	if len(categories) == 0 {
+		return "No results found", nil
+	} else {
+		listed_categories_string, err = json.MarshalIndent(categories, "", "    ")
+		if err != nil {
+			return "", fmt.Errorf("Error occurred during marshalling expenses to display as json: %w", err)
+		}
 	}
 
-	return category_interpreted
+	return string(listed_categories_string), nil
 }
 
-func readJson(filename string) ([]Expense, error) {
+func readCategoryJson(filename string) ([]Category, error) {
+	data_bytes, err := os.ReadFile(filename)
+	if err != nil {
+		return []Category{}, err
+	}
+
+	// create a list of category struct
+	var categories []Category
+	if len(data_bytes) > 0{
+		err = json.Unmarshal(data_bytes, &categories)
+		if err != nil {
+			return []Category{}, err
+		}
+	}
+
+	return categories, nil
+}
+
+func getValidCategory(category string) (string, error) {
+	filename := "categories.json"
+	categories, err := readCategoryJson(filename)
+	if err != nil {
+		return "", err
+	}
+
+	for i := range(categories) {
+		if categories[i].Short == category {
+			return categories[i].Name, nil
+		} else if categories[i].Name == category {
+			return categories[i].Name, nil
+		}
+	}
+
+	return "", fmt.Errorf("the category does not exist")
+
+}
+
+func readExpenseJson(filename string) ([]Expense, error) {
 	data_bytes, err := os.ReadFile(filename)
 	if err != nil {
 		return []Expense{}, err
@@ -67,7 +105,25 @@ func readJson(filename string) ([]Expense, error) {
 	return expenses, nil
 }
 
-func writeToJson(filename string, expenses []Expense, action string) error {
+
+func writeToCategoryJson(filename string, categories []Category) error {
+	json_categories, err := json.MarshalIndent(categories, "", "    ")
+    if err != nil {
+		return fmt.Errorf("Error occurred during marshalling: %w", err)
+    }
+	fmt.Println("JSON object created successfully")
+
+	// write to the file
+	err = os.WriteFile(filename, json_categories, 0644)
+	if err != nil {
+		return fmt.Errorf("failed to save file: %w", err)
+	}
+
+	log.Printf("Category successfully Created")
+
+	return nil
+}
+func writeToExpenseJson(filename string, expenses []Expense, action string) error {
 	json_expenses, err := json.MarshalIndent(expenses, "", "    ")
     if err != nil {
 		return fmt.Errorf("Error occurred during marshalling: %w", err)
@@ -102,13 +158,71 @@ func deleteAtIndex(slice []Expense, index int) []Expense {
     return append(slice[:index], slice[index+1:]...)
 }
 
+func createFileIfNotExists(filename string) ([]byte, error) {
+	data_bytes, err := os.ReadFile(filename)
+	if err != nil {
+		log.Println(err.Error())
+		log.Printf("No file named %s is found", filename)
+		log.Printf("Creating a new file named %s", filename)
+		log.Println("")
+
+		f, err := os.OpenFile(filename, os.O_CREATE, 0644)
+		if err != nil {
+			return []byte{}, fmt.Errorf("failed to create JSON file: %w", err)
+		}
+
+		log.Println("New file created.")
+		log.Println("Preparing JSON file...")
+		f.Close()
+	}
+
+	return data_bytes, err
+}
+
+func addCategory(short string, name string) error {
+	log.Println("Creating Category...")
+	category := Category{
+		Short: short,
+		Name: name,
+	}
+	log.Println("Category Created!")
+
+	log.Println("Preparing JSON file...")
+
+	// create file to write to if it doesn't exist, else create it
+	filename := "categories.json"
+	data_bytes, err := createFileIfNotExists(filename)
+	
+	// create a list of expenses struct
+	var categories []Category
+	// if there is content in json file, unmarshal it, and use that to replace expensese.
+	// that's why we used pointers
+	if len(data_bytes) > 0{
+		err = json.Unmarshal(data_bytes, &categories)
+		if err != nil {
+			return fmt.Errorf("failed to read JSON file: %w", err)
+		}
+	}
+
+	// append the new user to expenses
+	categories = append(categories, category)
+
+	return writeToCategoryJson(filename, categories)
+}
+
 func addExpense(category string, amount string, description string) error {
 	amount_conv, err := strconv.ParseFloat(amount, 64)
 	if err != nil {
 		return fmt.Errorf("invalid amount: %s", amount)
 	}
 
-	category = getValidCategory(category)
+	filename := "categories.json"
+	data_bytes, err := createFileIfNotExists(filename)
+
+	category, err = getValidCategory(category)
+	if err != nil {
+		return err
+	}
 
 	log.Println("Creating Expense...")
 	expense := Expense{
@@ -123,23 +237,8 @@ func addExpense(category string, amount string, description string) error {
 	log.Println("Preparing JSON file...")
 
 	// create file to write to if it doesn't exist, else create it
-	filename := "expenses.json"
-	data_bytes, err := os.ReadFile(filename)
-	if err != nil {
-		log.Println(err.Error())
-		log.Printf("Creating a new file named %s", filename)
-		log.Println("")
-
-		f, err := os.OpenFile(filename, os.O_CREATE, 0644)
-		if err != nil {
-			return fmt.Errorf("failed to create JSON file: %w", err)
-		}
-
-		log.Println("New file created.")
-		log.Println("Preparing JSON file...")
-		f.Close()
-	}
-
+	filename = "expenses.json"
+	data_bytes, err = createFileIfNotExists(filename)
 	
 	// create a list of expenses struct
 	var expenses []Expense
@@ -155,13 +254,13 @@ func addExpense(category string, amount string, description string) error {
 	// append the new user to expenses
 	expenses = append(expenses, expense)
 
-	return writeToJson(filename, expenses, "add")
+	return writeToExpenseJson(filename, expenses, "add")
 }
 
 
 func listExpenses() (string, error) {
 	filename := "expenses.json"
-	expenses, err := readJson(filename)
+	expenses, err := readExpenseJson(filename)
 	if err != nil {
 		return "", fmt.Errorf("%w", err)
 	}
@@ -182,7 +281,7 @@ func listExpenses() (string, error) {
 
 func updateExpense(id string, updates map[string]string) error {
 	filename := "expenses.json"
-	expenses, err := readJson(filename)
+	expenses, err := readExpenseJson(filename)
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
@@ -201,7 +300,10 @@ func updateExpense(id string, updates map[string]string) error {
 	for expense := range(expenses) {
 		if expenses[expense].ID.String() == id {
 			if updates["category"] != "" {
-				expenses[expense].Category = getValidCategory(updates["category"])
+				expenses[expense].Category, err = getValidCategory(updates["category"])
+				if err != nil {
+					return err
+				}
 			}
 			if updates["amount"] != "" {
 				amount_int, err := strconv.Atoi(updates["amount"])
@@ -216,13 +318,13 @@ func updateExpense(id string, updates map[string]string) error {
 		}
 	}
 
-	return writeToJson(filename, expenses, "update")
+	return writeToExpenseJson(filename, expenses, "update")
 }
 
 
 func deleteExpense(id string) error {
 	filename := "expenses.json"
-	expenses, err := readJson(filename)
+	expenses, err := readExpenseJson(filename)
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
@@ -242,5 +344,5 @@ func deleteExpense(id string) error {
 
 	expenses = deleteAtIndex(expenses, i)
 
-	return writeToJson(filename, expenses, "delete")
+	return writeToExpenseJson(filename, expenses, "delete")
 }

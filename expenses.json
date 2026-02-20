@@ -26,5 +26,12 @@
         "amount": 30000,
         "description": "Bought dog food",
         "time": "2026-02-20T14:30:34.972655127+01:00"
+    },
+    {
+        "id": "9715d56a-657b-4edc-9da2-6aa505426e79",
+        "category": "feeding",
+        "amount": 2000,
+        "description": "bought swallow in new flava",
+        "time": "2026-02-20T18:23:37.004956988+01:00"
     }
 ]
