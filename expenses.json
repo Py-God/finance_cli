@@ -1,16 +1,9 @@
 [
     {
-        "id": "be045127-1123-4ca2-840c-90a149ce8ca0",
-        "category": "Transportation",
-        "amount": 500,
-        "description": "Movement between home and Bako junction.",
-        "time": "2026-02-18T18:26:30.271425035+01:00"
-    },
-    {
         "id": "14532852-3ece-4958-bc08-5efd497b35d0",
         "category": "Miscellaneous",
-        "amount": 18000,
-        "description": "Data for February",
+        "amount": 400000,
+        "description": "Gave my babe her monthly allowance",
         "time": "2026-02-19T17:14:43.460629857+01:00"
     },
     {
@@ -26,5 +19,12 @@
         "amount": 3200,
         "description": "Bought item7Go for lunch",
         "time": "2026-02-20T13:51:27.683083247+01:00"
+    },
+    {
+        "id": "bcd4fef3-ca99-40cb-921d-110b599cb25a",
+        "category": "Miscellaneous",
+        "amount": 30000,
+        "description": "Bought dog food",
+        "time": "2026-02-20T14:30:34.972655127+01:00"
     }
 ]

@@ -18,7 +18,7 @@ var (
 
 // updateExpenseCmd represents the updateExpense command
 var updateExpenseCmd = &cobra.Command{
-	Use:   "finance_cli update <expense_uuid> -c <category> -a <amount> -d <description>",
+	Use:   "update <expense_uuid> -c <category> -a <amount> -d <description>",
 	Short: "A brief description of your command",
 	Aliases: []string{"update"},
 	Args: cobra.MinimumNArgs(1),
@@ -42,7 +42,7 @@ var updateExpenseCmd = &cobra.Command{
 		}
 		
 		// Apply all updates in one go
-		return update_expense(args[0], updates)
+		return updateExpense(args[0], updates)
 	},
 
 	SilenceUsage: true,

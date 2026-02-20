@@ -26,7 +26,7 @@ type Expense struct {
 }
 
 
-func display_categories() string {
+func displayCategories() string {
 	message := `Available Fields (not case sensitive)
 	Transportation - t
 	Feeding - f
@@ -36,7 +36,7 @@ func display_categories() string {
 	return message
 }
 
-func get_valid_category(category string) string {
+func getValidCategory(category string) string {
 	var category_interpreted string
 	switch category {
 	case "t": category_interpreted = "Transportation"
@@ -49,7 +49,7 @@ func get_valid_category(category string) string {
 	return category_interpreted
 }
 
-func read_json(filename string) ([]Expense, error) {
+func readJson(filename string) ([]Expense, error) {
 	data_bytes, err := os.ReadFile(filename)
 	if err != nil {
 		return []Expense{}, err
@@ -67,13 +67,48 @@ func read_json(filename string) ([]Expense, error) {
 	return expenses, nil
 }
 
-func add_expense(category string, amount string, description string) (string, error) {
-	amount_conv, err := strconv.ParseFloat(amount, 64)
+func writeToJson(filename string, expenses []Expense, action string) error {
+	json_expenses, err := json.MarshalIndent(expenses, "", "    ")
+    if err != nil {
+		return fmt.Errorf("Error occurred during marshalling: %w", err)
+    }
+	fmt.Println("JSON object created successfully")
+
+	// write to the file
+	err = os.WriteFile(filename, json_expenses, 0644)
 	if err != nil {
-		return "", fmt.Errorf("invalid amount: %s", amount)
+		return fmt.Errorf("failed to save file: %w", err)
 	}
 
-	category = get_valid_category(category)
+	var action_interpreted string
+	switch action {
+	case "add": action_interpreted += "added"
+	case "update": action_interpreted += "updated"
+	case "delete": action_interpreted += "deleted"
+	}
+
+	log.Printf("Expense successfully %s", action_interpreted)
+
+	return nil
+}
+
+func deleteAtIndex(slice []Expense, index int) []Expense {
+    
+    // Append function used to append elements to a slice
+    // first parameter as the slice to which the elements 
+    // are to be added/appended second parameter is the 
+    // element(s) to be appended into the slice
+    // return value as a slice
+    return append(slice[:index], slice[index+1:]...)
+}
+
+func addExpense(category string, amount string, description string) error {
+	amount_conv, err := strconv.ParseFloat(amount, 64)
+	if err != nil {
+		return fmt.Errorf("invalid amount: %s", amount)
+	}
+
+	category = getValidCategory(category)
 
 	log.Println("Creating Expense...")
 	expense := Expense{
@@ -97,7 +132,7 @@ func add_expense(category string, amount string, description string) (string, er
 
 		f, err := os.OpenFile(filename, os.O_CREATE, 0644)
 		if err != nil {
-			return "", fmt.Errorf("failed to create JSON file: %w", err)
+			return fmt.Errorf("failed to create JSON file: %w", err)
 		}
 
 		log.Println("New file created.")
@@ -113,34 +148,20 @@ func add_expense(category string, amount string, description string) (string, er
 	if len(data_bytes) > 0{
 		err = json.Unmarshal(data_bytes, &expenses)
 		if err != nil {
-			return "", fmt.Errorf("failed to read JSON file: %w", err)
+			return fmt.Errorf("failed to read JSON file: %w", err)
 		}
 	}
 
 	// append the new user to expenses
 	expenses = append(expenses, expense)
 
-	// Convert users instance to JSON format
-	// i guess json can marshal and unmarshal list of structs
-    json_expenses, err := json.MarshalIndent(expenses, "", "    ")
-    if err != nil {
-		return "", fmt.Errorf("Error occurred during marshalling: %w", err)
-    }
-	fmt.Println("JSON object created successfully")
-
-	// write to the file
-	err = os.WriteFile(filename, json_expenses, 0644)
-	if err != nil {
-		return "", fmt.Errorf("failed to save file: %w", err)
-	}
-
-	return string(data_bytes), nil
+	return writeToJson(filename, expenses, "add")
 }
 
 
-func list_expenses() (string, error) {
+func listExpenses() (string, error) {
 	filename := "expenses.json"
-	expenses, err := read_json(filename)
+	expenses, err := readJson(filename)
 	if err != nil {
 		return "", fmt.Errorf("%w", err)
 	}
@@ -159,9 +180,9 @@ func list_expenses() (string, error) {
 }
 
 
-func update_expense(id string, updates map[string]string) error {
+func updateExpense(id string, updates map[string]string) error {
 	filename := "expenses.json"
-	expenses, err := read_json(filename)
+	expenses, err := readJson(filename)
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
@@ -180,7 +201,7 @@ func update_expense(id string, updates map[string]string) error {
 	for expense := range(expenses) {
 		if expenses[expense].ID.String() == id {
 			if updates["category"] != "" {
-				expenses[expense].Category = get_valid_category(updates["category"])
+				expenses[expense].Category = getValidCategory(updates["category"])
 			}
 			if updates["amount"] != "" {
 				amount_int, err := strconv.Atoi(updates["amount"])
@@ -195,19 +216,31 @@ func update_expense(id string, updates map[string]string) error {
 		}
 	}
 
-	json_expenses, err := json.MarshalIndent(expenses, "", "    ")
-    if err != nil {
-		return fmt.Errorf("Error occurred during marshalling: %w", err)
-    }
-	fmt.Println("JSON object created successfully")
+	return writeToJson(filename, expenses, "update")
+}
 
-	// write to the file
-	err = os.WriteFile(filename, json_expenses, 0644)
+
+func deleteExpense(id string) error {
+	filename := "expenses.json"
+	expenses, err := readJson(filename)
 	if err != nil {
-		return fmt.Errorf("failed to save file: %w", err)
+		return fmt.Errorf("%w", err)
 	}
 
-	log.Println("Expense successfully updated")
+	id_found := false
+	var i int
+	for i = range(expenses) {
+		if expenses[i].ID.String() == id {
+			id_found = true
+			break
+		}
+	}
 
-	return nil
+	if id_found == false {
+		return fmt.Errorf("Invalid ID")
+	}
+
+	expenses = deleteAtIndex(expenses, i)
+
+	return writeToJson(filename, expenses, "delete")
 }

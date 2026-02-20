@@ -17,7 +17,7 @@ var categoriesCmd = &cobra.Command{
 	Long: `Use by running:
 	./bin/finance categories`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(display_categories())
+		fmt.Println(displayCategories())
 	},
 }
 

@@ -16,7 +16,7 @@ var listExpensesCmd = &cobra.Command{
 	Short: "List added expenses",
 	Aliases: []string{"list"},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		expenses, err := list_expenses()
+		expenses, err := listExpenses()
 		if err != nil {
 			return err
 		}
