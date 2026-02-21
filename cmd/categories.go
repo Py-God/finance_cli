@@ -5,8 +5,9 @@ Copyright © 2026 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
-
+	"os"
+	"github.com/jedib0t/go-pretty/v6/table"
+	"encoding/json"
 	"github.com/spf13/cobra"
 )
 
@@ -14,14 +15,12 @@ import (
 var ListcategoriesCmd = &cobra.Command{
 	Use:   "categories",
 	Short: "Display available categories",
-	Long: `Use by running:
-	./bin/finance categories`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		categories, err := ListCategories()
 		if err != nil {
 			return err
 		}
-		fmt.Println(categories)
+		printCategoriesTable(categories)
 
 		return nil
 	},
@@ -29,14 +28,20 @@ var ListcategoriesCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(ListcategoriesCmd)
+}
 
-	// Here you will define your flags and configuration settings.
+// print a nice table specific for the categories struct
+func printCategoriesTable(categoriesString string) {
+	var categories []Category
+	json.Unmarshal([]byte(categoriesString), &categories)
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// categoriesCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// categoriesCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	t := table.NewWriter()
+	t.SetOutputMirror(os.Stdout)
+	t.AppendHeader(table.Row{"Short", "Name"})
+	
+	for _, u := range categories {
+		t.AppendRow(table.Row{u.Short, u.Name})
+	}
+	
+	t.Render()
 }
