@@ -6,6 +6,7 @@ package cmd
 import (
 	"os"
 
+	"github.com/Py-God/finance_cli/models"
 	"github.com/spf13/cobra"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"encoding/json"
@@ -70,7 +71,7 @@ func init() {
 
 // print a nice table specific to expenses struct
 func printExpensesTable(expensesString string) {
-	var expenses []Expense
+	var expenses []models.Expense
 	json.Unmarshal([]byte(expensesString), &expenses)
 
 	t := table.NewWriter()

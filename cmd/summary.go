@@ -20,7 +20,7 @@ var (
 // summaryCmd represents the summary command
 var summaryCmd = &cobra.Command{
 	Use:   "summary [flag] <day> | <week> | <month> | <year>",
-	Short: "A brief description of your command",
+	Short: "total amount in expenses spent in a period",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		filters := make(map[string]string)
 

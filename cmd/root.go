@@ -14,9 +14,8 @@ import (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "finance_cli",
+	Use:   "./bin/finance_cli",
 	Short: "A simple expense tracker to manage your finances.",
-	Long: `I will write a longer description later.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },

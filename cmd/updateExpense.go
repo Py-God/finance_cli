@@ -19,7 +19,7 @@ var (
 // updateExpenseCmd represents the updateExpense command
 var updateExpenseCmd = &cobra.Command{
 	Use:   "update <expense_uuid> -c <category> -a <amount> -d <description>",
-	Short: "A brief description of your command",
+	Short: "Update an expense",
 	Aliases: []string{"update"},
 	Args: cobra.MinimumNArgs(1),
 	Long: `if using all three flags, ensure to use in that format, else, ensure the flags follow that sequence.`,

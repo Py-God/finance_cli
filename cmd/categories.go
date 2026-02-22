@@ -6,6 +6,8 @@ package cmd
 
 import (
 	"os"
+
+	"github.com/Py-God/finance_cli/models"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"encoding/json"
 	"github.com/spf13/cobra"
@@ -32,7 +34,7 @@ func init() {
 
 // print a nice table specific for the categories struct
 func printCategoriesTable(categoriesString string) {
-	var categories []Category
+	var categories []models.Category
 	json.Unmarshal([]byte(categoriesString), &categories)
 
 	t := table.NewWriter()

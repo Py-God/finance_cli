@@ -5,8 +5,6 @@ Copyright © 2026 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
@@ -17,12 +15,7 @@ var exportCmd = &cobra.Command{
 	Args: cobra.ExactArgs(1),
 	Long: ``,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		err := export(args[0])
-		if err == nil {
-			fmt.Println("CSV file successfully created.")
-		}
-
-		return err
+		return export(args[0])
 	},
 
 	SilenceUsage: true,

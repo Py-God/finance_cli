@@ -12,6 +12,9 @@ import (
 var addCategoryCmd = &cobra.Command{
 	Use:   "addCategory <short name of category> <full name of category>",
 	Short: "Add a category that can be used when adding an expense",
+	Long: `E.g.
+f for Feeding
+g for Groceries`,
 	Args: cobra.ExactArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		err := addCategory(args[0], args[1])
