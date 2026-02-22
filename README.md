@@ -14,6 +14,7 @@ A command-line expense tracker to manage your finances efficiently. Track expens
 - **Export**: Export expenses to CSV format
 
 ## Project Structure
+```
 finance_cli/
 ├── main.go              # Entry point
 ├── cmd/                 # Command implementations
@@ -36,7 +37,7 @@ finance_cli/
 ├── bin/                # Compiled binaries
 ├── go.mod              # Module definition
 └── LICENSE             # License file
-
+```
 ## Installation
 
 ### Prerequisites
