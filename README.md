@@ -2,6 +2,8 @@
 
 A command-line expense tracker to manage your finances efficiently. Track expenses, categorize spending, and generate summaries with ease.
 
+https://roadmap.sh/projects/expense-tracker
+
 ## Features
 
 - **Add Categories**: Create custom expense categories
